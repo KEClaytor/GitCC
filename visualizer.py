@@ -6,6 +6,7 @@ from math import pi, cos, sin
 
 blackColor = pygame.Color(0, 0, 0)
 whiteColor = pygame.Color(255, 255, 255)
+ltgryColor = pygame.Color(15, 15, 15)
 resOrb = 'resources/circle.png'
 resOctocat = 'resources/gitcat.png'
 
@@ -32,19 +33,13 @@ def get_rgb_from_code(code_type):
 class gloworb:
 
     def __init__(self, cx, cy, size):
+        self.x, self.y = cx-size/2, cy-size/2
+        self.size = size
         # Load up the default orb image
         # TODO: Put this out of the init function
         orbimg = pygame.image.load(resOrb).convert_alpha()
         orbimg = pygame.transform.scale(orbimg, (size, size))
-        # Set properties
-        self.x, self.y = cx-size/2, cy-size/2
-        self.size = size
-        surface = pygame.Surface((size, size), depth=24)
-        key = (0,255,0)
-        surface.fill(key)
-        surface.set_colorkey(key)
-        surface.blit(orbimg, (0, 0))
-        self.surf = surface
+        self.orbimg = orbimg
 
     #def set_color(self, code_type):
     #    (r, g, b) = get_rgb_from_code(code_type)
@@ -55,22 +50,25 @@ class gloworb:
     #    arr[:,:,2] = b
 
     def blit(self, window):
-        print self.x, self.y, self.size
-        window.blit(self.surf, (self.x, self.y))
+        window.blit(self.orbimg, (self.x, self.y))
 
 class orb_ring:
-    def __init__(self, numorbs, radius, offset_x, offset_y):
+    def __init__(self, numorbs, radius, center_x, center_y, backgroundColor):
         self.n = numorbs
         self.r = radius
-        self.ox, self.oy = offset_x, offset_y
+        self.cx, self.cy = center_x, center_y
+        self.ox, self.oy = center_x-radius, center_y-radius
+        self.screen = pygame.Surface((2*radius, 2*radius))
+        self.screen.fill(backgroundColor)
         self.orbs = []
         orb_size = radius/2
         for ii in range(self.n):
-            orbx = self.ox + radius*sin(2*pi*ii/self.n)
-            orby = self.oy + radius*cos(2*pi*ii/self.n)
+            orbx = center_x + radius*sin(2*pi*ii/self.n)
+            orby = center_y + radius*cos(2*pi*ii/self.n)
             self.orbs.append(gloworb(orbx, orby, orb_size))
 
     def blit(self, window):
+        window.blit(self.screen, (self.ox, self.oy))
         for orb in self.orbs:
             orb.blit(window)
 
@@ -92,13 +90,13 @@ if __name__ == "__main__":
     octocat = pygame.image.load(resOctocat).convert_alpha()
     octocat = pygame.transform.scale(octocat, (oh, oh))
     # Create the hued orbs
-    orbs = orb_ring(32, oh*4/10, sw/2, sh/2)
+    orbs = orb_ring(32, oh*4/10, sw/2, sh/2, ltgryColor)
     print orbs
     octoorb = pygame.image.load(resOrb).convert_alpha()
     # Execute the moves
     while True:
         # Base window fill
-        window.fill(whiteColor)
+        window.fill(blackColor)
         # Draw the orbs
         orbs.blit(window)
         # Draw octocat
